@@ -14,6 +14,7 @@ const ProfileImageRoutes = require("./routes/ProfileImageRoutes");
 const propertyRoutes = require('./routes/PropertyRoutes');
 const DashboardRoutes = require("./routes/DashboardRoutes");
 const SearchRoutes = require('./routes/SearchRoutes');
+const contactFormRoutes = require('./routes/ContactFormRoutes');
 
 const app = express();
 
@@ -41,7 +42,12 @@ app.use("/api/profile-image", ProfileImageRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/dashboard', DashboardRoutes);
 app.use('/api/search', SearchRoutes);
+app.use('/api/contact', contactFormRoutes);
 
+//Default route
+app.get('/', (req, res) => {
+  res.send('Acredge User Backend');
+});
 
 const PORT = process.env.PORT || 8000;
 

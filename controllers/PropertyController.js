@@ -96,6 +96,27 @@ exports.createProperty = async (req, res) => {
   }
 };
 
+// New method to get user-specific properties
+exports.getUserProperties = async (req, res) => {
+  try {
+    const { phoneNumber } = req.user;
+    
+    const snapshot = await db.collection(Property.collectionName)
+      .where('createdBy', '==', phoneNumber)
+      .get();
+
+    const properties = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.status(200).json(properties);
+  } catch (error) {
+    console.error('Error getting user properties:', error);
+    res.status(500).json({ error: 'Failed to get user properties' });
+  }
+};
+
 // Function to get all properties
 exports.getProperties = async (req, res) => {
   try {
