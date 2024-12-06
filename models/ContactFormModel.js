@@ -15,7 +15,7 @@ class ContactFormModel {
         message: formData.message,
         email: formData.email,
         position: formData.position,
-        time: timestamp,
+        time: formData.time,
         createdAt: timestamp,
         updatedAt: timestamp,
         userId: formData.userId || null

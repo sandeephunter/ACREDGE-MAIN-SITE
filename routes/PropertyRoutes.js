@@ -6,7 +6,7 @@ const { uploadPropertyMedia } = require('../middlewares/UploadMiddleware');
 
 router.post('/', isAuthenticated, uploadPropertyMedia, PropertyController.createProperty);
 router.put('/:id', isAuthenticated, uploadPropertyMedia, PropertyController.updateProperty);
-router.get('//my-properties', isAuthenticated, PropertyController.getUserProperties);
+router.get('/my-properties', isAuthenticated, PropertyController.getUserProperties);
 router.get('/', PropertyController.getProperties);
 router.get('/:id', isAuthenticated, PropertyController.getProperty);
 router.delete('/:id', isAuthenticated, PropertyController.deleteProperty);
