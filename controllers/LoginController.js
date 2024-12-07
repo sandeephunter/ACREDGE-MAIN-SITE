@@ -100,32 +100,58 @@ exports.isAuthenticated = async (req, res, next) => {
 };
 
 exports.logout = async (req, res) => {
+  console.log('Logout process started');
+  
   try {
     const token = req.cookies.token;
+    console.log('Token from cookies:', token ? 'Token exists' : 'No token found');
+
     if (!token) {
+      console.log('No token present - user already logged out');
       return res.status(200).json({ 
         message: "Already Logged Out, Please login again to continue." 
       });
     }
 
     try {
+      console.log('Attempting to verify JWT token');
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('Token decoded successfully', { 
+        phoneNumber: decoded.phoneNumber 
+      });
+
+      console.log('Attempting to delete token from database');
       await db.collection('tokens').doc(decoded.phoneNumber).delete();
+      console.log('Token deleted from database successfully');
+
+      console.log('Attempting to remove token from cache');
       tokenCache.del(decoded.phoneNumber);
+      console.log('Token removed from cache successfully');
     } catch (jwtError) {
-      console.error('JWT verification failed during logout:', jwtError);
+      console.error('JWT verification failed during logout:', {
+        error: jwtError.message,
+        name: jwtError.name,
+        stack: jwtError.stack
+      });
     }
 
     // Clear the cookie from the response
+    console.log('Attempting to clear token cookie');
     res.clearCookie('token', {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
     });
+    console.log('Token cookie cleared successfully');
 
+    console.log('Logout process completed successfully');
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error('Comprehensive logout error:', {
+      error: error.message,
+      name: error.name,
+      stack: error.stack
+    });
     res.status(500).json({ message: "Logout error occurred." });
   }
 };
