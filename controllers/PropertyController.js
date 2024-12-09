@@ -120,7 +120,10 @@ exports.getUserProperties = async (req, res) => {
 // Function to get all properties
 exports.getProperties = async (req, res) => {
   try {
-    const snapshot = await db.collection(Property.collectionName).get();
+    const snapshot = await db.collection(Property.collectionName)
+      .where('status', '==', 'Approved')
+      .get();
+      
     const properties = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
@@ -166,6 +169,15 @@ exports.updateProperty = async (req, res) => {
       return res.status(404).json({ message: 'Property not found' });
     }
     const existingData = propertyDoc.data();
+    if (existingData.createdBy !== req.user.phoneNumber) {
+      return res.status(403).json({ message: 'Not authorized to update this property' });
+    }
+
+    // If property was rejected and user is updating, set status back to Pending
+    if (existingData.status === 'Rejected') {
+      updatedData.status = 'Pending';
+      updatedData.rejectionNote = null; // Clear rejection note
+    }
 
     // Initialize media arrays
     updatedData.images = Array.isArray(updatedData.images) ? updatedData.images : [];
@@ -307,6 +319,8 @@ exports.updateProperty = async (req, res) => {
       console.error('Error updating property in search index:', searchError);
       // Don't fail the request if search indexing fails
     }
+
+    await docRef.update(cleanPropertyData);
 
     res.status(200).json({
       message: 'Property updated successfully',

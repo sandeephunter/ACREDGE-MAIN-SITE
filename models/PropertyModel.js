@@ -26,6 +26,10 @@ class Property {
     this.totalArea = data.totalArea;
     this.possessionStatus = data.possessionStatus;
 
+    // Status
+    this.status = data.status || 'Pending';
+    this.rejectionNote = data.rejectionNote || null;
+
     // Amenities
     this.amenities = data.amenities || [];
 
@@ -58,6 +62,10 @@ class Property {
     
     if (!data.buildingType || !['Residential', 'Commercial'].includes(data.buildingType))
       errors.push('Invalid building type');
+
+    // Status validation
+    if (data.status && !['Pending', 'In Review', 'Approved', 'Rejected'].includes(data.status))
+      errors.push('Invalid status value');
 
     // URL validation for media
     if (Array.isArray(data.images)) {
@@ -123,6 +131,8 @@ class Property {
       images: this.images,
       videos: this.videos,
       documents: this.documents,
+      status: this.status,
+      rejectionNote: this.rejectionNote,
       createdBy: this.createdBy,
       createdOn: this.createdOn,
       updatedBy: this.updatedBy,
@@ -137,6 +147,7 @@ class Property {
           typology: this.typology,
           addOns: this.addOns,
           area: this.area,
+          unit: this.unit,
           furnishType: this.furnishType,
           facing: this.facing,
           view: this.view,
@@ -152,6 +163,7 @@ class Property {
           typology: this.typology,
           addOns: this.addOns,
           area: this.area,
+          unit: this.unit,
           furnishType: this.furnishType,
           facing: this.facing,
           view: this.view,

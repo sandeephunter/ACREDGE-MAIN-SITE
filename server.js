@@ -15,6 +15,7 @@ const propertyRoutes = require('./routes/PropertyRoutes');
 const DashboardRoutes = require("./routes/DashboardRoutes");
 const SearchRoutes = require('./routes/SearchRoutes');
 const contactFormRoutes = require('./routes/ContactFormRoutes');
+const adminRoutes = require('./Admin/AdminRoutes');
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use('/api/properties', propertyRoutes);
 app.use('/api/dashboard', DashboardRoutes);
 app.use('/api/search', SearchRoutes);
 app.use('/api/contact', contactFormRoutes);
+app.use('/api/admin', adminRoutes);
 
 //Default route
 app.get('/', (req, res) => {
