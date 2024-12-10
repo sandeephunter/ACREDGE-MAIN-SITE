@@ -1,6 +1,9 @@
+require('dotenv').config();
 const { db } = require('../config/firebase');
 
-const ADMIN_NUMBERS = ['+917847940928', '+919990006705', '+919389883992', '+919572016410'];
+const ADMIN_NUMBERS = process.env.ADMIN_NUMBERS 
+  ? process.env.ADMIN_NUMBERS.split(',').map(num => num.trim())
+  : [];
 
 const isAdmin = async (req, res, next) => {
   try {
