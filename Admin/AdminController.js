@@ -89,44 +89,6 @@ exports.updatePropertyStatus = async (req, res) => {
 };
 
 // Update property details (admin version)
-// exports.updateProperty = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const updateData = req.body;
-    
-//     const propertyRef = db.collection(Property.collectionName).doc(id);
-//     const propertyDoc = await propertyRef.get();
-
-//     if (!propertyDoc.exists) {
-//       return res.status(404).json({ error: 'Property not found' });
-//     }
-
-//     // Validate the updated data
-//     const property = new Property({
-//       ...propertyDoc.data(),
-//       ...updateData,
-//       updatedBy: req.user.phoneNumber,
-//       updatedOn: new Date()
-//     });
-
-//     const errors = Property.validate(property);
-//     if (errors.length > 0) {
-//       return res.status(400).json({ errors });
-//     }
-
-//     await propertyRef.update(property.toFirestore());
-
-//     res.status(200).json({
-//       message: 'Property updated successfully',
-//       propertyId: id
-//     });
-//   } catch (error) {
-//     console.error('Error updating property:', error);
-//     res.status(500).json({ error: 'Failed to update property' });
-//   }
-// };
-
-
 exports.updateProperty = async (req, res) => {
   try {
     const { id } = req.params;
@@ -139,15 +101,10 @@ exports.updateProperty = async (req, res) => {
       return res.status(404).json({ error: 'Property not found' });
     }
 
-    // Remove undefined values
-    const cleanUpdateData = Object.fromEntries(
-      Object.entries(updateData).filter(([_, v]) => v !== undefined)
-    );
-
     // Validate the updated data
     const property = new Property({
       ...propertyDoc.data(),
-      ...cleanUpdateData,
+      ...updateData,
       updatedBy: req.user.phoneNumber,
       updatedOn: new Date()
     });
