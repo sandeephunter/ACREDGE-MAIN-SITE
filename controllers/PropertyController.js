@@ -165,10 +165,12 @@ exports.updateProperty = async (req, res) => {
 
     // Get existing property
     const propertyDoc = await db.collection(Property.collectionName).doc(id).get();
+
     if (!propertyDoc.exists) {
       return res.status(404).json({ message: 'Property not found' });
     }
     const existingData = propertyDoc.data();
+
     if (existingData.createdBy !== req.user.phoneNumber) {
       return res.status(403).json({ message: 'Not authorized to update this property' });
     }
@@ -177,6 +179,9 @@ exports.updateProperty = async (req, res) => {
     if (existingData.status === 'Rejected') {
       updatedData.status = 'Pending';
       updatedData.rejectionNote = null; // Clear rejection note
+    } else {
+      updatedData.status = existingData.status;
+      updatedData.rejectionNote = null;
     }
 
     // Initialize media arrays
@@ -303,7 +308,7 @@ exports.updateProperty = async (req, res) => {
     }
 
     // Update in Firestore
-    await db.collection(Property.collectionName).doc(id).update(cleanPropertyData);
+    await propertyRef.update(cleanPropertyData);
 
     // Clean up deleted files
     await deleteMultipleFiles([

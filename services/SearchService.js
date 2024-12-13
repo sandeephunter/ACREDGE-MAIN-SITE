@@ -90,14 +90,29 @@ class SearchService {
     try {
       const filterString = this._buildFilterString(filters);
       
-      const searchParams = {
+      // First try searching with the query
+      const searchResults = await this.propertyIndex.search(query, {
         filters: filterString,
         page,
         hitsPerPage,
         getRankingInfo: true
-      };
+      });
 
-      return await this.propertyIndex.search(query, searchParams);
+      // If no results found and there was a search query, fetch all properties
+      if (searchResults.nbHits === 0 && query) {
+        const allResults = await this.propertyIndex.search('', {
+          filters: filterString,
+          page,
+          hitsPerPage,
+          getRankingInfo: true
+        });
+        return {
+          ...allResults,
+          fallbackSearch: true // Flag to indicate this is a fallback search
+        };
+      }
+
+      return searchResults;
     } catch (error) {
       console.error('Error searching properties:', error);
       return { hits: [], nbHits: 0, page: 0 };

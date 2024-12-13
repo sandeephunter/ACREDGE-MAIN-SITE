@@ -20,7 +20,10 @@ class SearchController {
 
       res.json({
         success: true,
-        ...results
+        ...results,
+        message: results.fallbackSearch 
+          ? "No exact matches found. Showing all available properties."
+          : `Found ${results.nbHits} properties`
       });
     } catch (error) {
       console.error('Search error:', error);
@@ -35,6 +38,13 @@ class SearchController {
   async syncPropertiesToSearch(req, res) {
     try {
       const snapshot = await db.collection('properties').get();
+
+      if (snapshot.empty) {
+        return res.json({
+          success: true,
+          message: 'No properties to sync'
+        });
+      }
       
       const operations = snapshot.docs.map(doc => ({
         objectID: doc.id,
@@ -45,7 +55,7 @@ class SearchController {
 
       res.json({
         success: true,
-        message: `Synced ${operations.length} properties`
+        message: `Successfully synced ${operations.length} properties`
       });
     } catch (error) {
       console.error('Sync error:', error);
