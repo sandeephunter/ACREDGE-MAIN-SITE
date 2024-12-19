@@ -16,6 +16,7 @@ const DashboardRoutes = require("./routes/DashboardRoutes");
 const SearchRoutes = require('./routes/SearchRoutes');
 const contactFormRoutes = require('./routes/ContactFormRoutes');
 const adminRoutes = require('./Admin/AdminRoutes');
+const favoriteRoutes = require('./routes/AddFavoriteRoutes');
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use('/api/dashboard', DashboardRoutes);
 app.use('/api/search', SearchRoutes);
 app.use('/api/contact', contactFormRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/favorites', favoriteRoutes);
 
 //Default route
 app.get('/', (req, res) => {

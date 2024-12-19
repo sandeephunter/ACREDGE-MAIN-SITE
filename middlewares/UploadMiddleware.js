@@ -4,10 +4,10 @@ const path = require('path');
 const storage = multer.memoryStorage();
 
 const FILE_LIMITS = {
-  profileImage: 5 * 1024 * 1024,     // 5MB for profile images
-  propertyImages: 10 * 1024 * 1024,  // 10MB for property images
-  propertyVideos: 50 * 1024 * 1024,  // 50MB for property videos
-  propertyDocuments: 25 * 1024 * 1024 // 25MB for property documents
+  profileImage: 5 * 1024 * 1024,
+  propertyImages: 10 * 1024 * 1024,
+  propertyVideos: 50 * 1024 * 1024,
+  propertyDocuments: 25 * 1024 * 1024
 };
 
 const MAX_COUNTS = {  
@@ -16,17 +16,14 @@ const MAX_COUNTS = {
   propertyDocuments: 10
 };
 
-const fileFilter = (req, file, cb) => {
-  const allowedImageTypes = /jpeg|jpg|png/;
-  const allowedVideoTypes = /mp4|mov/;
-  const allowedDocTypes = /pdf|doc|docx|jpg|jpeg|png/;
-  const ext = path.extname(file.originalname).toLowerCase().substring(1);
+const fileFilter = (req, file, cb) => { 
 
   try {
     switch (file.fieldname) {
       case 'profileImage':
-        if (!allowedImageTypes.test(ext)) {
-          throw new Error('Profile image must be JPG or PNG format');
+        // Accept any image format
+        if (!file.mimetype.startsWith('image/')) {
+          throw new Error('Profile image must be an image file');
         }
         if (file.size > FILE_LIMITS.profileImage) {
           throw new Error('Profile image size exceeds 5MB limit');
@@ -34,8 +31,9 @@ const fileFilter = (req, file, cb) => {
         break;
 
       case 'images':
-        if (!allowedImageTypes.test(ext)) {
-          throw new Error('Property images must be JPG or PNG format');
+        // Accept any image format
+        if (!file.mimetype.startsWith('image/')) {
+          throw new Error('Property images must be image files');
         }
         if (file.size > FILE_LIMITS.propertyImages) {
           throw new Error('Property image size exceeds 10MB limit');
@@ -43,8 +41,9 @@ const fileFilter = (req, file, cb) => {
         break;
 
       case 'videos':
-        if (!allowedVideoTypes.test(ext)) {
-          throw new Error('Property videos must be MP4 or MOV format');
+        // Accept any video format
+        if (!file.mimetype.startsWith('video/')) {
+          throw new Error('Property videos must be video files');
         }
         if (file.size > FILE_LIMITS.propertyVideos) {
           throw new Error('Property video size exceeds 50MB limit');
@@ -52,9 +51,7 @@ const fileFilter = (req, file, cb) => {
         break;
 
       case 'documents':
-        if (!allowedDocTypes.test(ext)) {
-          throw new Error('Documents must be PDF, DOC, DOCX, JPG or PNG format');
-        }
+        // Accept any document format
         if (file.size > FILE_LIMITS.propertyDocuments) {
           throw new Error('Document size exceeds 25MB limit');
         }
