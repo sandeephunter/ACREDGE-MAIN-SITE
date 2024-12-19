@@ -8,7 +8,7 @@ router.post('/', isAuthenticated, uploadPropertyMedia, PropertyController.create
 router.put('/:id', isAuthenticated, uploadPropertyMedia, PropertyController.updateProperty);
 router.get('/my-properties', isAuthenticated, PropertyController.getUserProperties);
 router.get('/', PropertyController.getProperties);
-router.get('/:id', isAuthenticated, PropertyController.getProperty);
+router.get('/:id', PropertyController.getProperty);
 router.delete('/:id', isAuthenticated, PropertyController.deleteProperty);
 
 module.exports = router;

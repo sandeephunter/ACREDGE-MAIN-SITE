@@ -99,9 +99,10 @@ exports.createProperty = async (req, res) => {
 // New method to get user-specific properties
 exports.getUserProperties = async (req, res) => {
   try {
+    const { phoneNumber } = req.user;
     
     const snapshot = await db.collection(Property.collectionName)
-      .where('status', '==', 'Approved')
+      .where('createdBy', '==', phoneNumber)
       .get();
 
     const properties = snapshot.docs.map(doc => ({
@@ -145,9 +146,20 @@ exports.getProperty = async (req, res) => {
       return res.status(404).json({ error: 'Property not found' });
     }
 
+    const propertyData = propertyDoc.data();
+    
+    // Check if user is the owner of the property
+    const isOwner = req.user && propertyData.createdBy === req.user.phoneNumber;
+    
+    // If user is not the owner and property is not approved, return 404
+    // This prevents non-owners from seeing non-approved properties
+    if (!isOwner && propertyData.status !== 'Approved') {
+      return res.status(404).json({ error: 'Property not found' });
+    }
+
     res.status(200).json({
       id: propertyDoc.id,
-      ...propertyDoc.data()
+      ...propertyData
     });
   } catch (error) {
     console.error('Error getting property:', error);
