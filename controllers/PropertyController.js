@@ -99,10 +99,9 @@ exports.createProperty = async (req, res) => {
 // New method to get user-specific properties
 exports.getUserProperties = async (req, res) => {
   try {
-    const { phoneNumber } = req.user;
     
     const snapshot = await db.collection(Property.collectionName)
-      .where('createdBy', '==', phoneNumber)
+      .where('status', '==', 'Approved')
       .get();
 
     const properties = snapshot.docs.map(doc => ({
