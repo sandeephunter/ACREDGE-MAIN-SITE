@@ -6,8 +6,19 @@ exports.addToFavorites = async (req, res) => {
     const { propertyId } = req.body;
     const userId = req.user.phoneNumber;
 
+    // Validate inputs
+    if (!propertyId || typeof propertyId !== 'string' || propertyId.trim() === '') {
+      return res.status(400).json({ message: 'Valid propertyId is required' });
+    }
+
+    if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+      return res.status(401).json({ message: 'User not properly authenticated' });
+    }
+
     // Check if property exists
-    const propertyDoc = await db.collection('Properties').doc(propertyId).get();
+    const Property = require('../models/PropertyModel');
+    console.log('Checking property:', propertyId);
+    const propertyDoc = await db.collection(Property.collectionName).doc(propertyId.trim()).get();
     if (!propertyDoc.exists) {
       return res.status(404).json({ message: 'Property not found' });
     }
@@ -15,7 +26,7 @@ exports.addToFavorites = async (req, res) => {
     // Check if already in favorites
     const existingFavorite = await db.collection(Favorite.collectionName)
       .where('userId', '==', userId)
-      .where('propertyId', '==', propertyId)
+      .where('propertyId', '==', propertyId.trim())
       .get();
 
     if (!existingFavorite.empty) {
@@ -24,7 +35,7 @@ exports.addToFavorites = async (req, res) => {
 
     const favoriteData = {
       userId,
-      propertyId,
+      propertyId: propertyId.trim(),
       createdAt: new Date()
     };
 
@@ -37,12 +48,18 @@ exports.addToFavorites = async (req, res) => {
     }
 
     // Add to favorites
-    await db.collection(Favorite.collectionName).add(favorite.toFirestore());
+    const docRef = await db.collection(Favorite.collectionName).add(favorite.toFirestore());
 
-    res.status(201).json({ message: 'Added to favorites successfully' });
+    res.status(201).json({ 
+      message: 'Added to favorites successfully',
+      favoriteId: docRef.id
+    });
   } catch (error) {
     console.error('Error adding to favorites:', error);
-    res.status(500).json({ message: 'Failed to add to favorites' });
+    res.status(500).json({ 
+      message: 'Failed to add to favorites',
+      error: error.message 
+    });
   }
 };
 
@@ -51,9 +68,13 @@ exports.removeFromFavorites = async (req, res) => {
     const { propertyId } = req.params;
     const userId = req.user.phoneNumber;
 
+    if (!propertyId || typeof propertyId !== 'string' || propertyId.trim() === '') {
+      return res.status(400).json({ message: 'Valid propertyId is required' });
+    }
+
     const favoriteSnapshot = await db.collection(Favorite.collectionName)
       .where('userId', '==', userId)
-      .where('propertyId', '==', propertyId)
+      .where('propertyId', '==', propertyId.trim())
       .get();
 
     if (favoriteSnapshot.empty) {
@@ -66,13 +87,21 @@ exports.removeFromFavorites = async (req, res) => {
     res.status(200).json({ message: 'Removed from favorites successfully' });
   } catch (error) {
     console.error('Error removing from favorites:', error);
-    res.status(500).json({ message: 'Failed to remove from favorites' });
+    res.status(500).json({ 
+      message: 'Failed to remove from favorites',
+      error: error.message 
+    });
   }
 };
 
 exports.getUserFavorites = async (req, res) => {
   try {
     const userId = req.user.phoneNumber;
+    const Property = require('../models/PropertyModel');
+
+    if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+      return res.status(401).json({ message: 'User not properly authenticated' });
+    }
 
     // Get all favorites for the user
     const favoritesSnapshot = await db.collection(Favorite.collectionName)
@@ -83,23 +112,30 @@ exports.getUserFavorites = async (req, res) => {
     
     // Get the actual property details for each favorite
     for (const doc of favoritesSnapshot.docs) {
-      const propertyDoc = await db.collection('Properties')
-        .doc(doc.data().propertyId)
+      const favoriteData = doc.data();
+      
+      const propertyDoc = await db.collection(Property.collectionName)
+        .doc(favoriteData.propertyId)
         .get();
-
+      
       if (propertyDoc.exists) {
+        const propertyData = propertyDoc.data();
         favorites.push({
           id: propertyDoc.id,
-          ...propertyDoc.data(),
+          ...propertyData,
           favoriteId: doc.id
         });
+      } else {
       }
     }
 
     res.status(200).json(favorites);
   } catch (error) {
     console.error('Error getting favorites:', error);
-    res.status(500).json({ message: 'Failed to get favorites' });
+    res.status(500).json({ 
+      message: 'Failed to get favorites',
+      error: error.message 
+    });
   }
 };
 
@@ -108,14 +144,21 @@ exports.checkFavoriteStatus = async (req, res) => {
     const { propertyId } = req.params;
     const userId = req.user.phoneNumber;
 
+    if (!propertyId || typeof propertyId !== 'string' || propertyId.trim() === '') {
+      return res.status(400).json({ message: 'Valid propertyId is required' });
+    }
+
     const favoriteSnapshot = await db.collection(Favorite.collectionName)
       .where('userId', '==', userId)
-      .where('propertyId', '==', propertyId)
+      .where('propertyId', '==', propertyId.trim())
       .get();
 
     res.status(200).json({ isFavorite: !favoriteSnapshot.empty });
   } catch (error) {
     console.error('Error checking favorite status:', error);
-    res.status(500).json({ message: 'Failed to check favorite status' });
+    res.status(500).json({ 
+      message: 'Failed to check favorite status',
+      error: error.message 
+    });
   }
 };
