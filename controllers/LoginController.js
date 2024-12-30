@@ -44,7 +44,17 @@ exports.verifyFirebaseToken = async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      domain: '.acredge.in',
+      path: '/'
+    });
+
+    // Safari fallback cookie
+    res.cookie('token_safari', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      domain: '.acredge.in',
+      path: '/'
     });
 
     res.status(200).json({ 
@@ -60,7 +70,10 @@ exports.verifyFirebaseToken = async (req, res) => {
 
 exports.isAuthenticated = async (req, res, next) => {
   try {
-    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+    const token = 
+      req.cookies.token || 
+      req.cookies.token_fallback || 
+      req.headers.authorization?.split(' ')[1];
 
     if (!token) {
       return res.status(401).json({ message: "No token provided." });
