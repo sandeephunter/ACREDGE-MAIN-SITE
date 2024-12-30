@@ -32,7 +32,7 @@ app.use(bodyParser.json());
 
 app.use(
   cors({
-  origin: ['https://acredge.in', 'https://www.acredge.in','http://127.0.0.1:3000'],
+  origin: ['https://acredge.in', 'https://www.acredge.in','https://127.0.0.1:3000','http://127.0.0.1:3000','https://127.0.0.1', 'http://127.0.0.1' ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   })
