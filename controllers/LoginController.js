@@ -49,7 +49,7 @@ exports.verifyFirebaseToken = async (req, res) => {
     });
 
     // Safari fallback cookie
-    res.cookie('token_safari', token, {
+    res.cookie('token_fallback', token, {
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
