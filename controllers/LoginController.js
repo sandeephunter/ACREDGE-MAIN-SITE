@@ -43,17 +43,16 @@ exports.verifyFirebaseToken = async (req, res) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: true,
-      sameSite: 'none',
-      domain: '.acredge.in',
-      path: '/'
+      sameSite: ['none', 'lax'],
+      domain: 'acredge.in',
     });
 
-    // Safari fallback cookie
+    // fallback cookie
     res.cookie('token_fallback', token, {
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
-      domain: '.acredge.in',
+      domain: 'acredge.in',
       path: '/'
     });
 
