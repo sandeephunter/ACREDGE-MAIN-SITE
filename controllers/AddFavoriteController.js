@@ -17,7 +17,7 @@ exports.addToFavorites = async (req, res) => {
 
     // Check if property exists
     const Property = require('../models/PropertyModel');
-    console.log('Checking property:', propertyId);
+
     const propertyDoc = await db.collection(Property.collectionName).doc(propertyId.trim()).get();
     if (!propertyDoc.exists) {
       return res.status(404).json({ message: 'Property not found' });

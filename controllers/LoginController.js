@@ -1,13 +1,13 @@
 const { admin, db } = require('../config/firebase');
 const jwt = require('jsonwebtoken');
 const NodeCache = new require('node-cache');
+const { encrypt, decrypt } = require('../utils/tokenEncryption');
 const tokenCache = new NodeCache({ stdTTL: 300 });
 
 exports.verifyFirebaseToken = async (req, res) => {
   try {
-    const { idToken, rememberMe, sameWhatsapp } = req.body;
+    const { idToken } = req.body;
 
-    // Verify the Firebase ID token
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const phoneNumber = decodedToken.phone_number;
 
@@ -17,7 +17,7 @@ exports.verifyFirebaseToken = async (req, res) => {
 
     const expiresIn = '7d';
     const token = jwt.sign({ phoneNumber }, process.env.JWT_SECRET, { expiresIn });
-
+    
     const expirationDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     
     // Store token in Firestore
@@ -35,21 +35,16 @@ exports.verifyFirebaseToken = async (req, res) => {
     if (!userProfile.exists) {
       await db.collection('UserProfile').doc(phoneNumber).set({
         phoneNumber,
-        sameNumberOnWhatsapp: sameWhatsapp ? phoneNumber : '',
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
     }
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // Encrypt token before sending
+    const encryptedToken = encrypt(token);
 
     res.status(200).json({ 
       message: "Logged in successfully",
-      token
+      token: encryptedToken
     });
 
   } catch (error) {
@@ -60,10 +55,17 @@ exports.verifyFirebaseToken = async (req, res) => {
 
 exports.isAuthenticated = async (req, res, next) => {
   try {
-    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+    const encryptedToken = req.headers.authorization;
 
-    if (!token) {
+    if (!encryptedToken) {
       return res.status(401).json({ message: "No token provided." });
+    }
+
+    let token;
+    try {
+      token = decrypt(encryptedToken);
+    } catch (error) {
+      return res.status(401).json({ message: "Invalid token format." });
     }
 
     let decoded;
@@ -100,30 +102,28 @@ exports.isAuthenticated = async (req, res, next) => {
 
 exports.logout = async (req, res) => {
   try {
-    const token = req.cookies.token;
+    const encryptedToken = req.headers.authorization;
 
-    if (!token) {
+    if (!encryptedToken) {
       return res.status(200).json({ 
         message: "Already Logged Out, Please login again to continue." 
       });
     }
 
     try {
+      const token = decrypt(encryptedToken);
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       await db.collection('tokens').doc(decoded.phoneNumber).delete();
       tokenCache.del(decoded.phoneNumber);
-    } catch (jwtError) {
-
+    } catch (error) {
+      // Token might be invalid, but we still want to complete the logout
     }
 
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+    res.status(200).json({ 
+      message: "Logged out successfully",
+      action: "CLEAR_LOCAL_STORAGE"
     });
-
-    res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     res.status(500).json({ message: "Logout error occurred." });
   }

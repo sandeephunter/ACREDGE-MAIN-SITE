@@ -53,7 +53,7 @@ app.get('/', (req, res) => {
   res.send('Acredge User Backend');
 });
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8928;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
