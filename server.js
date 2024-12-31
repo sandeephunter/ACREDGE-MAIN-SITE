@@ -30,9 +30,19 @@ app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
 
+// For Production
+// app.use(
+//   cors({
+//   origin: ['https://acredge.in', 'https://www.acredge.in','https://127.0.0.1:3000','http://127.0.0.1:3000','https://127.0.0.1', 'http://127.0.0.1' ],
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   })
+// );
+
+// For Local
 app.use(
   cors({
-  origin: ['https://acredge.in', 'https://www.acredge.in','https://127.0.0.1:3000','http://127.0.0.1:3000','https://127.0.0.1', 'http://127.0.0.1' ],
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   })

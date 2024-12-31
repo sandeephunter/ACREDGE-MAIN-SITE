@@ -40,12 +40,21 @@ exports.verifyFirebaseToken = async (req, res) => {
       });
     }
 
+    // For Production
+    // res.cookie('token', token, {
+    //   httpOnly: true,
+    //   secure: true,
+    //   sameSite: 'Lax',
+    //   domain: 'acredge.in',
+    //   path: '/',
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    // });
+
+    // For Local
     res.cookie('token', token, {
       httpOnly: true,
       secure: true,
-      sameSite: 'Lax',
-      domain: 'acredge.in',
-      path: '/',
+      sameSite: none,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
